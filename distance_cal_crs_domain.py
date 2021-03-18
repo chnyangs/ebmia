@@ -1,31 +1,43 @@
 import os
 import numpy as np
-from utils.DataUtil import get_mem_data
+from utils.DataUtil import get_mem_data, kmeans_generation
 from utils.ModelUtil import mmd_loss
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 import tensorflow as tf
 
 if __name__ == '__main__':
-    # 1. Load domain 1 dataset
-    domain_1_path = "out/MNIST/GIN_MNIST_GPU0_11h43m53s_on_Jan_22_2021/"
-    domain_2_path = "out/CIFAR10/GCN_CIFAR10_GPU0_13h39m49s_on_Sep_29_2020/"
-    X_train_in_1, y_train_in_1, X_train_out_1, y_train_out_1 = get_mem_data(domain_1_path)
-    X_train_in_2, y_train_in_2, X_train_out_2, y_train_out_2 = get_mem_data(domain_2_path)
-    X_1 = np.concatenate((X_train_in_1, X_train_out_1), axis=0)
-    num_nonmembers = 30
-    # np.random.seed(10)
-    selected_list = np.random.choice(range(0, X_1.shape[0]), num_nonmembers)
-    selected_data = X_1[selected_list]
     moves_distance_in = 0
     non_member_correct = 0
     member_correct = 0
-    wrong = 0
     TP, TN, FP, FN = 0, 0, 0, 0
     target_number = 500
+    # 1. Load domain 1 dataset
+    domain_1_path = "out/MNIST/GCN_MNIST_GPU0_11h15m39s_on_Oct_02_2020/"
+    domain_2_path = "out/CIFAR10/GCN_CIFAR10_GPU0_13h39m49s_on_Sep_29_2020/"
+    X_train_in_1, y_train_in_1, X_train_out_1, y_train_out_1 = get_mem_data(domain_1_path)
+
+    X_train_in_2, y_train_in_2, X_train_out_2, y_train_out_2 = get_mem_data(domain_2_path)
     X_target = np.concatenate((X_train_in_2[0:target_number], X_train_out_2[0:target_number]), axis=0)
-    original_dist = mmd_loss(tf.convert_to_tensor(selected_data, dtype=float),
-                             tf.convert_to_tensor(X_target, dtype=float), 1)
+
+    # prepare non-member dataset
+    X_1 = np.concatenate((X_train_in_1, X_train_out_1), axis=0)
+    label_idx = kmeans_generation(X_1, 50)
+    original_dist = 0
+    selected_data = np.array([])
+    for i in range(50):
+        X_tmp = X_1[label_idx[i]]
+        num_nonmembers = 30
+        # np.random.seed(10)
+        selected_list = np.random.choice(range(0, X_tmp.shape[0]), num_nonmembers)
+        tmp_data = X_tmp[selected_list]
+
+        tmp_dist = mmd_loss(tf.convert_to_tensor(tmp_data, dtype=float),
+                                 tf.convert_to_tensor(X_target, dtype=float), 1)
+        if tmp_dist > original_dist:
+            original_dist = tmp_dist
+            selected_data = tmp_data
+        print(i,original_dist)
     # print("original distance between two dataset:{}".format(original_dist))
     data_size = X_target.shape[0]
     for moves_index in range(data_size):
@@ -44,7 +56,6 @@ if __name__ == '__main__':
                 TP += 1
             else:
                 FN += 1
-
         else:
             # moves non-members
             if original_dist <= moves_target_to_non_member_dist:
@@ -52,7 +63,7 @@ if __name__ == '__main__':
                 TN += 1
             else:
                 FP += 1
-    #
+    # calculate accuracy, precision, recall and F1-Score
     accuracy = (non_member_correct + member_correct) / data_size
     precision = TP/(TP + FP)
     recall = TP/(TP + FN)
