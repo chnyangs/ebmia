@@ -1,5 +1,11 @@
 out/
 .idea/
+data/
 utils/__pycache__/*
 *.py[cod]
 
+/data/
+/__MACOSX/
+
+# ignore files
+test.py
