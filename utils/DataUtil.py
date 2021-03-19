@@ -3,7 +3,7 @@ import pickle
 from sklearn.cluster import KMeans
 import numpy as np
 import tensorflow as tf
-
+from tqdm import tqdm
 from utils.ModelUtil import mmd_loss
 
 
@@ -34,7 +34,7 @@ def get_mem_data(exp_path):
 def kmeans_generation(X, num_cluster):
     kmeans = KMeans(n_clusters=num_cluster, random_state=0).fit(X)
     label_idx = {}
-    for label in range(num_cluster):
+    for label in tqdm(range(num_cluster),desc="KMeans clustering:"):
         index = np.where(kmeans.labels_ == label)[0]
         label_idx[label] = index.tolist()
     return label_idx
@@ -44,7 +44,7 @@ def get_selected_clustering_data(X_nm, X_target, num_clusters=10, num_nonmembers
     max_original_dist = 0
     selected_data = np.array([])
     labels = kmeans_generation(X_nm, num_clusters)
-    for i in range(num_clusters):
+    for i in tqdm(range(num_clusters), desc="calculate cluster distance:"):
         X_tmp = X_nm[labels[i]]
         # np.random.seed(10)
         selected_list = np.random.choice(range(0, X_tmp.shape[0]), num_nonmembers)
@@ -58,8 +58,23 @@ def get_selected_clustering_data(X_nm, X_target, num_clusters=10, num_nonmembers
     return max_original_dist, selected_data
 
 
+def get_selected_single_instances(X_nm, X_target, num_nonmembers=10):
+    distance_dict = {}
+    for i in tqdm(range(X_nm.shape[0]), desc="calculate distance:"):
+        tmp_dist = mmd_loss(tf.convert_to_tensor([X_nm[i]], dtype=float),
+                            tf.convert_to_tensor(X_target, dtype=float), 1)
+        distance_dict[i] = tmp_dist.numpy()
+    distance_dict = sorted(distance_dict.items(), key=lambda x: x[1],reverse=True)
+    top_index = []
+    for dd in distance_dict[0:num_nonmembers]:
+        top_index.append(dd[0])
+    print(distance_dict[0:num_nonmembers])
+    max_original_dist = mmd_loss(tf.convert_to_tensor(X_nm[top_index], dtype=float),
+                                 tf.convert_to_tensor(X_target, dtype=float), 1)
+    return max_original_dist, X_nm[top_index]
+
+
 if __name__ == '__main__':
     data_path = "../out/CIFAR10/GCN_CIFAR10_GPU0_13h39m49s_on_Sep_29_2020/"
     X_train_in, y_train_in, X_train_out, y_train_out = get_mem_data(data_path)
-    label_idx = kmeans_generation(X_train_in, 10)
-    print(label_idx)
+    get_selected_single_instances(X_train_in, X_train_in, 10)
