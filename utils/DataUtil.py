@@ -2,6 +2,9 @@ import os
 import pickle
 from sklearn.cluster import KMeans
 import numpy as np
+import tensorflow as tf
+
+from utils.ModelUtil import mmd_loss
 
 
 def load_pickled_data(path):
@@ -35,6 +38,24 @@ def kmeans_generation(X, num_cluster):
         index = np.where(kmeans.labels_ == label)[0]
         label_idx[label] = index.tolist()
     return label_idx
+
+
+def get_selected_clustering_data(X_nm, X_target, num_clusters=10, num_nonmembers=20):
+    max_original_dist = 0
+    selected_data = np.array([])
+    labels = kmeans_generation(X_nm, num_clusters)
+    for i in range(num_clusters):
+        X_tmp = X_nm[labels[i]]
+        # np.random.seed(10)
+        selected_list = np.random.choice(range(0, X_tmp.shape[0]), num_nonmembers)
+        tmp_data = X_tmp[selected_list]
+
+        tmp_dist = mmd_loss(tf.convert_to_tensor(tmp_data, dtype=float),
+                            tf.convert_to_tensor(X_target, dtype=float), 1)
+        if tmp_dist > max_original_dist:
+            max_original_dist = tmp_dist
+            selected_data = tmp_data
+    return max_original_dist, selected_data
 
 
 if __name__ == '__main__':

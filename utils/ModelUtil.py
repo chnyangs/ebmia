@@ -1,5 +1,5 @@
 from functools import partial
-
+import numpy as np
 from utils.MIUtil import compute_pairwise_distances
 import tensorflow as tf
 
@@ -89,3 +89,40 @@ def evaluate_attack(m_true, m_pred):
     F1_Score = 2 * (precision.result() * recall.result()) / (precision.result() + recall.result())
     print('accuracy:%.4f precision:%.4f recall:%.4f F1_Score:%.4f'
           % (accuracy.result(), precision.result(), recall.result(), F1_Score))
+
+
+def evaluate_cluster_distance_attack(params):
+    X_target, target_number, selected_data, max_original_dist = params
+    data_size = X_target.shape[0]
+    non_member_correct = 0
+    member_correct = 0
+    TP, TN, FP, FN = 0, 0, 0, 0
+    for moves_index in range(data_size):
+        selected_data_from_target = X_target[moves_index]
+        # moves target to non member
+        moves_target_to_non_member = np.append(selected_data, [selected_data_from_target], axis=0)
+        # delete moves from target
+        moves_target_to_non_member_tensor = tf.convert_to_tensor(moves_target_to_non_member, dtype=float)
+        X_target_temp = np.delete(X_target, list(range(moves_index)), axis=0)
+        X_target_temp = tf.convert_to_tensor(X_target_temp, dtype=float)
+        moves_target_to_non_member_dist = mmd_loss(moves_target_to_non_member_tensor, X_target_temp, 1)
+        if moves_index < target_number:
+            # moves members
+            if max_original_dist >= moves_target_to_non_member_dist:
+                member_correct += 1
+                TP += 1
+            else:
+                FN += 1
+        else:
+            # moves non-members
+            if max_original_dist <= moves_target_to_non_member_dist:
+                non_member_correct += 1
+                TN += 1
+            else:
+                FP += 1
+    # calculate accuracy, precision, recall and F1-Score
+    accuracy = (non_member_correct + member_correct) / data_size
+    precision = TP / (TP + FP)
+    recall = TP / (TP + FN)
+    f1 = 2 * precision * recall / (precision + recall)
+    return accuracy, precision, recall, f1

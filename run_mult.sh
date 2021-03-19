@@ -9,7 +9,7 @@ run() {
       # shellcheck disable=SC2068
       if [ "$flag" = 'CRS' ]; then
         $@
-        $py_path distance_cal_crs_domain.py
+        $py_path cluster_based_crs_domain.py
       fi
     done
 }

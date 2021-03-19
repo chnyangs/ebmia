@@ -142,6 +142,7 @@ def maximum_mean_discrepancy(x, y, kernel=gaussian_kernel_matrix):
         cost = tf.where(cost > 0, cost, 0, name='value')
     return cost
 
+
 def probe_model(model, x_, y_true, m_true):
     c_ = model.predict(x_)
     shuffled_index = tf.random.shuffle(tf.range(c_.shape[0]))
