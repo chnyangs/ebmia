@@ -25,12 +25,14 @@ if __name__ == '__main__':
         X_non_member = X_non_member[0:target_number*2]
     # prepare target dataset to evaluate
     X_target = np.concatenate((X_train_in_as_target[0:target_number], X_train_out_as_target[0:target_number]), axis=0)
+
     # calculate maximum distance between two dataset
     num_nonmembers = 10
     print("X_non_member:{} and X_target:{}".format(X_non_member.shape, X_target.shape))
     num_clusters = 30
     max_original_dist, selected_data = get_selected_clustering_data(X_non_member, X_target,
                                                                     num_clusters, num_nonmembers)
+
     print("original distance between two dataset:{}".format(max_original_dist))
     print("shape of selected dataset:{}".format(selected_data.shape))
     params = X_target, target_number, selected_data, max_original_dist
