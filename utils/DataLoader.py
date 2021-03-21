@@ -1,6 +1,6 @@
 import dgl
 import torch
-from data.superpixels import SuperPixDataset
+# from data.superpixels import SuperPixDataset
 from dgl.data import LegacyTUDataset
 
 
