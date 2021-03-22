@@ -1,6 +1,7 @@
 out/
 .idea/
 data/
+results/
 utils/__pycache__/*
 *.py[cod]
 

@@ -31,6 +31,9 @@ def gpu_setup(use_gpu, gpu_id):
 def train_val():
     per_epoch_time = []
     t0 = time.time()
+    save_dir = "Target" + '_' + dataset_name + '_' + model_name + '_' + str(round(t0))
+    check_point_dir = os.path.join("results", save_dir)
+    save_info = {"save": False, "save_dir": check_point_dir, "data_type": ""}
 
     # Load dataset
     target_train_set, target_val_set, target_test_set = slice_data(dataset, [0.6, 0.2, 0.2])
@@ -54,47 +57,64 @@ def train_val():
                                    drop_last=False, collate_fn=collate)
     target_test_loader = DataLoader(target_test_set, batch_size=params['batch_size'], shuffle=False,
                                     drop_last=False, collate_fn=collate)
-    with tqdm(range(params['epochs'])) as t:
-        for epoch in t:
-            t.set_description('Epoch %d' % epoch)
-            start = time.time()
-            epoch_train_loss, epoch_train_acc, optimizer = train_epoch_sparse(model,
-                                                                              optimizer,
-                                                                              device,
-                                                                              target_train_loader)
+    try:
+        with tqdm(range(params['epochs'])) as t:
+            for epoch in t:
+                t.set_description('Epoch %d' % epoch)
+                start = time.time()
+                epoch_train_loss, epoch_train_acc, optimizer = train_epoch_sparse(model,
+                                                                                  optimizer,
+                                                                                  device,
+                                                                                  target_train_loader)
 
-            # evaluate model
-            epoch_val_loss, epoch_val_acc = evaluate_network_sparse(model, device, target_val_loader)
-            # test model
-            epoch_test_loss, epoch_test_acc = evaluate_network_sparse(model, device, target_test_loader)
-            # record loss & acc
-            epoch_train_losses.append(epoch_train_loss)
-            epoch_val_losses.append(epoch_val_loss)
-            epoch_train_accs.append(epoch_train_acc)
-            epoch_val_accs.append(epoch_val_acc)
-            # formalize print information
-            t.set_postfix(time=time.time() - start, lr=optimizer.param_groups[0]['lr'],
-                          train_loss=epoch_train_loss, val_loss=epoch_val_loss,
-                          train_acc=epoch_train_acc, val_acc=epoch_val_acc,
-                          test_acc=epoch_test_acc)
-            per_epoch_time.append(time.time() - start)
+                # evaluate model
+                epoch_val_loss, epoch_val_acc = evaluate_network_sparse(model, device, target_val_loader, save_info)
+                # test model
+                epoch_test_loss, epoch_test_acc = evaluate_network_sparse(model, device, target_test_loader, save_info)
+                # record loss & acc
+                epoch_train_losses.append(epoch_train_loss)
+                epoch_val_losses.append(epoch_val_loss)
+                epoch_train_accs.append(epoch_train_acc)
+                epoch_val_accs.append(epoch_val_acc)
+                # formalize print information
+                t.set_postfix(time=time.time() - start, lr=optimizer.param_groups[0]['lr'],
+                              train_loss=epoch_train_loss, val_loss=epoch_val_loss,
+                              train_acc=epoch_train_acc, val_acc=epoch_val_acc,
+                              test_acc=epoch_test_acc)
+                per_epoch_time.append(time.time() - start)
 
-            # Saving checkpoint
-            check_point_dir = os.path.join("results", "T_RUN_")
-            if not os.path.exists(check_point_dir):
-                os.makedirs(check_point_dir)
-            # torch.save(model.state_dict(), '{}.pkl'.format(check_point_dir + "/epoch_" + str(epoch)))
+                # Saving checkpoint
+                if not os.path.exists(check_point_dir):
+                    os.makedirs(check_point_dir)
 
-            # update model parameters
-            scheduler.step(epoch_val_loss)
+                # update model parameters
+                scheduler.step(epoch_val_loss)
 
-    _, test_acc = evaluate_network_sparse(model, device, target_test_loader)
-    _, train_acc = evaluate_network_sparse(model, device, target_train_loader)
-    print("Test Accuracy: {:.4f}".format(test_acc))
-    print("Train Accuracy: {:.4f}".format(train_acc))
-    print("Convergence Time (Epochs): {:.4f}".format(epoch))
-    print("TOTAL TIME TAKEN: {:.4f}s".format(time.time() - t0))
-    print("AVG TIME PER EPOCH: {:.4f}s".format(np.mean(per_epoch_time)))
+        # update save information & start evaluating & testing model
+        save_info['save'] = True
+        save_info['data_type'] = "test"
+        _, test_acc = evaluate_network_sparse(model, device, target_test_loader, save_info)
+        save_info['data_type'] = "train"
+        _, train_acc = evaluate_network_sparse(model, device, target_train_loader, save_info)
+        print("Test Accuracy: {:.4f}".format(test_acc))
+        print("Train Accuracy: {:.4f}".format(train_acc))
+        print("Convergence Time (Epochs): {:.4f}".format(epoch))
+        print("TOTAL TIME TAKEN: {:.4f}s".format(time.time() - t0))
+        print("AVG TIME PER EPOCH: {:.4f}s".format(np.mean(per_epoch_time)))
+
+        # save entire model
+        torch.save(model, '{}.pkl'.format(check_point_dir + "/target_model", ))
+        # save evaluate information
+        with open(check_point_dir + '/results.txt', 'w') as f:
+            f.write("Train Accuracy:{}\n".format(train_acc))
+            f.write("Test Accuracy:{}\n".format(test_acc))
+            f.close()
+    except KeyboardInterrupt:
+        print('-' * 89)
+        print('Target Model Training --- Exiting from training early because of KeyboardInterrupt')
+        print('Removing folder:{}'.format(check_point_dir))
+        os.removedirs(check_point_dir)
+        print('Removing folder done.')
 
 
 if __name__ == '__main__':
@@ -119,7 +139,7 @@ if __name__ == '__main__':
     params = config[model_name]['params']
     # check batch_size
     if args.batch != 64:
-        params['batch_size'] = args.batch
+        params['batch_size'] = int(args.batch)
     net_params = config[model_name]['net_params']
     config['dataset'] = args.dataset
     dataset = LoadData(dataset_name)
@@ -130,5 +150,6 @@ if __name__ == '__main__':
     net_params['n_classes'] = num_classes
     if device.type == 'cuda':
         torch.cuda.manual_seed(params['seed'])
-    dirs = 'save'
+
+    # start train
     train_val()
