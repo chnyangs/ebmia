@@ -3,6 +3,7 @@ import pickle
 from sklearn.cluster import KMeans
 import numpy as np
 import tensorflow as tf
+from torch.utils.data import random_split
 from tqdm import tqdm
 from utils.ModelUtil import mmd_loss
 
@@ -72,6 +73,20 @@ def get_selected_single_instances(X_nm, X_target, num_nonmembers=10):
     max_original_dist = mmd_loss(tf.convert_to_tensor(X_nm[top_index], dtype=float),
                                  tf.convert_to_tensor(X_target, dtype=float), 1)
     return max_original_dist, X_nm[top_index]
+
+
+def slice_data(data, pct=None):
+    if pct is None:
+        pct = [0.7, 0.3]
+    if len(pct) == 2:
+        train_size = round(len(data) * pct[0])
+        test_size = len(data) - train_size
+        return random_split(data, [train_size, test_size])
+    if len(pct) == 3:
+        train_size = round(len(data) * pct[0])
+        val_size = round(len(data) * pct[1])
+        test_size = len(data) - train_size - val_size
+        return random_split(data, [train_size, val_size, test_size])
 
 
 if __name__ == '__main__':

@@ -48,7 +48,7 @@ class GCNLayer(nn.Module):
         self.batchnorm_h = nn.BatchNorm1d(out_dim)
         self.activation = activation
         self.dropout = nn.Dropout(dropout)
-        if self.dgl_builtin == False:
+        if not self.dgl_builtin:
             self.apply_mod = NodeApplyModule(in_dim, out_dim)
         elif dgl.__version__ < "0.5":
             self.conv = GraphConv(in_dim, out_dim)
@@ -58,7 +58,7 @@ class GCNLayer(nn.Module):
     def forward(self, g, feature):
         h_in = feature  # to be used for residual connection
 
-        if self.dgl_builtin == False:
+        if not self.dgl_builtin:
             g.ndata['h'] = feature
             g.update_all(msg, reduce)
             g.apply_nodes(func=self.apply_mod)

@@ -5,8 +5,8 @@ from dgl.data import LegacyTUDataset
 
 
 def LoadData(DATASET_NAME):
-    if DATASET_NAME == 'MNIST' or DATASET_NAME == 'CIFAR10':
-        return SuperPixDataset(DATASET_NAME)
+    # if DATASET_NAME == 'MNIST' or DATASET_NAME == 'CIFAR10':
+    #     return SuperPixDataset(DATASET_NAME)
 
     # handling for the TU Datasets
     # https://chrsmrrs.github.io/datasets/docs/datasets/
@@ -48,4 +48,4 @@ def collate(samples):
     #  (graph, label).
     graphs, labels = map(list, zip(*samples))
     batched_graph = dgl.batch(graphs)
-    return batched_graph, torch.tensor(labels)
+    return batched_graph, torch.tensor(labels, dtype=torch.long)
