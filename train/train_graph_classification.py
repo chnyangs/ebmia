@@ -80,7 +80,7 @@ def evaluate_network_sparse(model, device, data_loader, save_info):
         # Save Posteriors
         if save_flag:
             x_save_path = os.path.join(save_dir, 'X_train_Label_' + str(save_type) + '.pickle')
-            y_save_path = os.path.join(save_dir, 'y_train_Label' + str(save_type) + '.pickle')
+            y_save_path = os.path.join(save_dir, 'y_train_Label_' + str(save_type) + '.pickle')
             pickle.dump(np.array(train_posterior), open(x_save_path, 'wb'))
             pickle.dump(np.array(train_labels), open(y_save_path, 'wb'))
     return epoch_test_loss, epoch_test_acc

@@ -50,9 +50,9 @@ def get_selected_clustering_data(X_nm, X_target, num_clusters=10, num_nonmembers
         # np.random.seed(10)
         selected_list = np.random.choice(range(0, X_tmp.shape[0]), num_nonmembers)
         tmp_data = X_tmp[selected_list]
-
-        tmp_dist = mmd_loss(tf.convert_to_tensor(tmp_data, dtype=float),
-                            tf.convert_to_tensor(X_target, dtype=float), 1)
+        print(tf.convert_to_tensor(tmp_data, dtype=float))
+        tmp_dist = mmd_loss(tf.Tensor(tmp_data, dtype=float),
+                            tf.Tensor(X_target, dtype=float), 1)
         if tmp_dist > max_original_dist:
             max_original_dist = tmp_dist
             selected_data = tmp_data
