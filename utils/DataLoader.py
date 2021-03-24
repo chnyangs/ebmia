@@ -10,7 +10,8 @@ def LoadData(DATASET_NAME):
 
     # handling for the TU Datasets
     # https://chrsmrrs.github.io/datasets/docs/datasets/
-    TU_DATASETS = ['ENZYMES', 'DD', 'PROTEINS_full', 'COLLAB', 'MUTAG']
+    TU_DATASETS = ['ENZYMES', 'DD', 'PROTEINS_full', 'COLLAB', 'MUTAG','NCI1','NCI109','AIDS','REDDIT-MULTI-5K',
+                   'COIL-RAG', 'Fingerprint', 'Letter-high', 'github_stargazers']
     if DATASET_NAME in TU_DATASETS:
         return LegacyTUDataset(DATASET_NAME)
 

@@ -30,7 +30,7 @@
     "GCN": {
         "params": {
             "seed": 41,
-            "epochs": 100,
+            "epochs": 200,
             "batch_size": 64,
             "init_lr": 7e-4,
             "lr_reduce_factor": 0.5,

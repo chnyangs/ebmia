@@ -68,7 +68,6 @@ def get_selected_single_instances(X_nm, X_target, num_nonmembers=10):
     top_index = []
     for dd in distance_dict[0:num_nonmembers]:
         top_index.append(dd[0])
-    print(distance_dict[0:num_nonmembers])
     max_original_dist = mmd_loss(tf.convert_to_tensor(X_nm[top_index], dtype=float),
                                  tf.convert_to_tensor(X_target, dtype=float), 1)
     return max_original_dist, X_nm[top_index]
@@ -86,6 +85,14 @@ def slice_data(data, pct=None):
         val_size = round(len(data) * pct[1])
         test_size = len(data) - train_size - val_size
         return random_split(data, [train_size, val_size, test_size])
+
+
+def select_top_k(data, top=2):
+    arr = []
+    for d in data:
+        top_k_idx = d.argsort()[::-1][0:top]
+        arr.append(d[top_k_idx])
+    return np.array(arr)
 
 
 if __name__ == '__main__':

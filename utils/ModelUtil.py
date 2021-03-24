@@ -4,6 +4,7 @@ from utils.MIUtil import compute_pairwise_distances
 import tensorflow as tf
 from tqdm import tqdm
 
+
 def gaussian_kernel_matrix(x, y, sigmas):
     r"""Computes a Guassian Radial Basis Kernel between the samples of x and y.
     We create a sum of multiple gaussian kernels each having a width sigma_i.
@@ -97,7 +98,7 @@ def evaluate_cluster_distance_attack(params):
     non_member_correct = 0
     member_correct = 0
     TP, TN, FP, FN = 0, 0, 0, 0
-    for moves_index in tqdm(range(data_size),desc="evaluate_cluster_distance_attack:"):
+    for moves_index in tqdm(range(data_size), desc="evaluate_cluster_distance_attack:"):
         selected_data_from_target = X_target[moves_index]
         # moves target to non member
         moves_target_to_non_member = np.append(selected_data, [selected_data_from_target], axis=0)
@@ -124,7 +125,7 @@ def evaluate_cluster_distance_attack(params):
                 FP += 1
     # calculate accuracy, precision, recall and F1-Score
     accuracy = (non_member_correct + member_correct) / data_size
-    precision = TP / (TP + FP) # low precision, high FP
-    recall = TP / (TP + FN) # high recall, low FN
+    precision = TP / (TP + FP)  # low precision, high FP
+    recall = TP / (TP + FN)  # high recall, low FN
     f1 = 2 * precision * recall / (precision + recall)
     return accuracy, precision, recall, f1

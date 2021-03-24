@@ -7,9 +7,16 @@ run() {
     shift
     for i in $(seq "$number"); do
       # shellcheck disable=SC2068
-      if [ "$flag" = 'CRS' ]; then
+      if [ "$flag" = 'CLU' ]; then
         $@
         $py_path 'attack_cluster_based_crs_domain.py'
+      elif [ "$flag" = 'ITE' ]; then
+        # shellcheck disable=SC2068
+        $@
+        $py_path 'attack_iterative_based_crs_domain.py'
+      elif [ "$flag" = 'DEF' ]; then
+        $@
+        $py_path 'attack_default_crs_domain.py'
       fi
     done
 }
