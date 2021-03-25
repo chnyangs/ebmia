@@ -3,7 +3,8 @@ with open("results.txt", 'r') as f:
     index = 1
     acc, pre, recall, f1, dis = [], [], [], [], []
     for line in lines:
-        if index % 5 == 0:
+        # print(index, line)
+        if index % 3 == 0:
             values = line.strip().split(',')
             acc.append(values[0])
             pre.append(values[1])
