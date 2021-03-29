@@ -36,7 +36,7 @@ def train_val():
     save_info = {"save": False, "save_dir": check_point_dir, "data_type": ""}
 
     # Load dataset
-    target_train_set, target_val_set, target_test_set = slice_data(dataset, [0.6, 0.2, 0.2])
+    target_train_set, target_val_set, target_test_set = slice_data(dataset, [0.4, 0.2, 0.4])
     model = gnn_model(model_name, net_params)
     print(model)
     model = model.to(device)
@@ -108,6 +108,7 @@ def train_val():
         with open(check_point_dir + '/results.txt', 'w') as f:
             f.write("Train Accuracy:{}\n".format(train_acc))
             f.write("Test Accuracy:{}\n".format(test_acc))
+            f.write("Epochs:{}".format(params['epochs']))
             f.close()
     except KeyboardInterrupt:
         print('-' * 89)
@@ -124,6 +125,7 @@ if __name__ == '__main__':
     parser.add_argument('--dataset', required=True, help="Please give a value for dataset name")
     parser.add_argument('--model', required=True, help="Please give a value for model name")
     parser.add_argument('--batch', default=64, help="Please give a value for model name")
+    parser.add_argument('--epochs', default=100, help="Please give a value for model name")
 
     args = parser.parse_args()
 
@@ -135,11 +137,14 @@ if __name__ == '__main__':
     # read args
     dataset_name = args.dataset
     model_name = args.model
+    epochs = args.epochs
     # read general params & netparams
     params = config[model_name]['params']
     # check batch_size
     if args.batch != 64:
         params['batch_size'] = int(args.batch)
+    if args.epochs != 100:
+        params['epochs'] = int(epochs)
     net_params = config[model_name]['net_params']
     config['dataset'] = args.dataset
     dataset = LoadData(dataset_name)

@@ -13,7 +13,7 @@ if __name__ == '__main__':
     # 1. Load domain 1 dataset
     domain_1_path = "results/Target_DD_GCN_1616387754"
     # GCN_MNIST_GPU0_11h15m39s_on_Oct_02_2020
-    domain_2_path = "out/CIFAR10/GCN_CIFAR10_GPU0_20h26m05s_on_Sep_28_2020"
+    domain_2_path = "out/MNIST/GCN_MNIST_GPU0_11h15m39s_on_Oct_02_2020"
     # OGBG_PPA_100_57
     # GCN_CIFAR10_GPU0_20h26m05s_on_Sep_28_2020
     X_train_in_as_non_member, y_train_in_as_non_member, \
@@ -30,7 +30,7 @@ if __name__ == '__main__':
     selected_idx = idx[0:30]
     X_non_member = X_non_member[selected_idx]
     # prepare target dataset to evaluate
-    target_number = X_train_in_as_target.shape[0]
+    target_number = min(X_train_in_as_target.shape[0], X_train_out_as_target.shape[0])
     target_number = 1000 if target_number > 1000 else target_number
     X_target = np.concatenate((X_train_in_as_target[0:target_number], X_train_out_as_target[0:target_number]), axis=0)
     # calculate maximum distance between two dataset

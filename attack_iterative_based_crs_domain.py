@@ -23,7 +23,7 @@ if __name__ == '__main__':
     # prepare non-member dataset
     X_non_member = np.concatenate((X_train_in_as_non_member, X_train_out_as_non_member), axis=0)
     # prepare target dataset to evaluate
-    target_number = X_train_in_as_target.shape[0]
+    target_number = min(X_train_in_as_target.shape[0], X_train_out_as_target.shape[0])
     target_number = 1000 if target_number > 1000 else target_number
     if X_non_member.shape[0] > target_number * 2:
         X_non_member = X_non_member[0:target_number * 2]
