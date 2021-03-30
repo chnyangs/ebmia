@@ -10,9 +10,9 @@ tf.config.list_physical_devices('GPU')
 
 if __name__ == '__main__':
     # 1. Load domain 1 dataset
-    domain_1_path = "results/Target_DD_GCN_1616387754"
+    domain_1_path = "exp1/Target_PROTEINS_full_GCN_1617014111"
     # GCN_MNIST_GPU0_11h15m39s_on_Oct_02_2020
-    domain_2_path = "out/MNIST/GCN_MNIST_GPU0_11h15m39s_on_Oct_02_2020"
+    domain_2_path = "exp1/Target_NCI-H23_GCN_1617018169"
     # OGBG_PPA_100_57
     # GCN_CIFAR10_GPU0_20h26m05s_on_Sep_28_2020
     # GCN_PROTEINS_full_GPU0_00h28m28s_on_Jan_03_2021
