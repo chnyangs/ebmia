@@ -1,6 +1,6 @@
 import os
 import random
-
+import argparse, json
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 import tensorflow as tf
 import numpy as np
@@ -10,17 +10,24 @@ from utils.ModelUtil import evaluate_cluster_distance_attack, mmd_loss
 tf.config.list_physical_devices('GPU')
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--s', required=True, help="source dataset")
+    parser.add_argument('--t', required=True, help="targeted dataset")
+
+    args = parser.parse_args()
+    domain_source_path = args.s
+    domain_target_path = args.t
     # 1. Load domain 1 dataset
-    domain_1_path = "exp1/Target_AIDS_GCN_1617014492"
-    # GCN_MNIST_GPU0_11h15m39s_on_Oct_02_2020
-    domain_2_path = "exp1/Target_github_stargazers_GCN_1617016611"
+    # domain_1_path = "exp1/Target_NCI109_GCN_1617015703"
+    # # GCN_MNIST_GPU0_11h15m39s_on_Oct_02_2020
+    # domain_2_path = "exp1/Target_AIDS_GCN_1617014492"
     # OGBG_PPA_100_57
     # GCN_CIFAR10_GPU0_20h26m05s_on_Sep_28_2020
     X_train_in_as_non_member, y_train_in_as_non_member, \
-    X_train_out_as_non_member, y_train_out_as_non_member = get_mem_data(domain_1_path)
+    X_train_out_as_non_member, y_train_out_as_non_member = get_mem_data(domain_source_path)
 
     X_train_in_as_target, y_train_in_as_target, \
-    X_train_out_as_target, y_train_out_as_target = get_mem_data(domain_2_path)
+    X_train_out_as_target, y_train_out_as_target = get_mem_data(domain_target_path)
 
     # prepare non-member dataset
     X_non_member = np.concatenate((X_train_in_as_non_member, X_train_out_as_non_member), axis=0)
@@ -40,7 +47,7 @@ if __name__ == '__main__':
     selected_target_in_idx = target_in_idx[0:target_number]
     selected_target_out_idx = target_out_idx[0:target_number]
     print("selected_target_in_idx:{} and selected_target_out_idx:{}".format(len(selected_target_in_idx),
-                                                                           len(selected_target_out_idx)))
+                                                                            len(selected_target_out_idx)))
     X_target = np.concatenate((X_train_in_as_target[selected_target_in_idx],
                                X_train_out_as_target[selected_target_out_idx]), axis=0)
     # calculate maximum distance between two dataset

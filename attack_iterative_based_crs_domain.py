@@ -1,4 +1,5 @@
 import os
+import argparse, json
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 import tensorflow as tf
@@ -10,15 +11,19 @@ tf.config.list_physical_devices('GPU')
 
 if __name__ == '__main__':
     # 1. Load domain 1 dataset
-    domain_1_path = "results/Target_DD_GCN_1616387754"
-    # GCN_MNIST_GPU0_11h15m39s_on_Oct_02_2020
-    domain_2_path = "results/Target_NCI1_GCN_1616581437"
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--s', required=True, help="source dataset")
+    parser.add_argument('--t', required=True, help="targeted dataset")
+
+    args = parser.parse_args()
+    domain_source_path = args.s
+    domain_target_path = args.t
     # GCN_CIFAR10_GPU0_13h39m49s_on_Sep_29_2020
     X_train_in_as_non_member, y_train_in_as_non_member, \
-    X_train_out_as_non_member, y_train_out_as_non_member = get_mem_data(domain_1_path)
+    X_train_out_as_non_member, y_train_out_as_non_member = get_mem_data(domain_source_path)
 
     X_train_in_as_target, y_train_in_as_target, \
-    X_train_out_as_target, y_train_out_as_target = get_mem_data(domain_2_path)
+    X_train_out_as_target, y_train_out_as_target = get_mem_data(domain_target_path)
 
     # prepare non-member dataset
     X_non_member = np.concatenate((X_train_in_as_non_member, X_train_out_as_non_member), axis=0)

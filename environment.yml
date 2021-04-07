@@ -136,4 +136,4 @@ dependencies:
     - urllib3==1.26.4
     - werkzeug==1.0.1
     - wrapt==1.12.1
-prefix: F:\Anaconda3\envs\ebmia
+prefix: /home/wayne/anaconda3/envs/ebmia
