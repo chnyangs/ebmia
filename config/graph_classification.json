@@ -3,7 +3,7 @@
         "use": true,
         "id": 0
     },
-    "out_dir": "results/TUs_graph_classification/",
+    "out_dir": "exp2/",
     "MLP": {
         "params": {
             "seed": 41,

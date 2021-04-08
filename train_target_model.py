@@ -6,7 +6,7 @@ import time
 import numpy as np
 import torch
 from torch import optim
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, random_split
 from tqdm import tqdm
 
 from train.train_graph_classification import train_epoch_sparse, evaluate_network_sparse
@@ -32,7 +32,7 @@ def train_val():
     per_epoch_time = []
     t0 = time.time()
     save_dir = "Target" + '_' + dataset_name + '_' + model_name + '_' + str(round(t0))
-    check_point_dir = os.path.join("results", save_dir)
+    check_point_dir = os.path.join("exp2", save_dir)
     save_info = {"save": False, "save_dir": check_point_dir, "data_type": ""}
 
     # Load dataset
@@ -126,6 +126,7 @@ if __name__ == '__main__':
     parser.add_argument('--model', required=True, help="Please give a value for model name")
     parser.add_argument('--batch', default=64, help="Please give a value for model name")
     parser.add_argument('--epochs', default=100, help="Please give a value for model name")
+    parser.add_argument('--half', type=bool, default=False, help="Please give a value for model name")
 
     args = parser.parse_args()
 
@@ -148,6 +149,9 @@ if __name__ == '__main__':
     net_params = config[model_name]['net_params']
     config['dataset'] = args.dataset
     dataset = LoadData(dataset_name)
+    if args.half:
+        print("split dataset into half...")
+        dataset, _ = random_split(dataset, [len(dataset) // 2, len(dataset) - len(dataset) // 2])
     graphs, labels = map(list, zip(*dataset))
     dataset = format_graph(graphs, labels)
     net_params['in_dim'] = dataset[0][0].ndata['feat'][0].shape[0]

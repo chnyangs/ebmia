@@ -1,11 +1,13 @@
 import os
 import random
 import argparse, json
+import torch
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 import tensorflow as tf
 import numpy as np
 from utils.DataUtil import get_mem_data, select_top_k
 from utils.ModelUtil import evaluate_cluster_distance_attack, mmd_loss
+import torch.nn.functional as F
 
 tf.config.list_physical_devices('GPU')
 
@@ -17,12 +19,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
     domain_source_path = args.s
     domain_target_path = args.t
-    # 1. Load domain 1 dataset
-    # domain_1_path = "exp1/Target_NCI109_GCN_1617015703"
-    # # GCN_MNIST_GPU0_11h15m39s_on_Oct_02_2020
-    # domain_2_path = "exp1/Target_AIDS_GCN_1617014492"
-    # OGBG_PPA_100_57
-    # GCN_CIFAR10_GPU0_20h26m05s_on_Sep_28_2020
+    # 1. Load source & target dataset
     X_train_in_as_non_member, y_train_in_as_non_member, \
     X_train_out_as_non_member, y_train_out_as_non_member = get_mem_data(domain_source_path)
 
@@ -36,14 +33,15 @@ if __name__ == '__main__':
     random.shuffle(idx)
     selected_idx = idx[0:30]
     X_non_member = X_non_member[selected_idx]
-    # prepare target dataset to evaluate
-    target_number = min(X_train_in_as_target.shape[0], X_train_out_as_target.shape[0])
-    target_number = 2000 if target_number > 2000 else target_number
+    X_non_member = np.array([F.softmax(torch.FloatTensor(x), dim=0).numpy() for x in X_non_member])
+    # target_number = 2000 if target_number > 2000 else target_number
     assert X_train_in_as_target.shape[0] == X_train_out_as_target.shape[0]
+    # prepare target dataset to evaluate
+    target_number = X_train_in_as_target.shape[0]
     target_in_idx, target_out_idx = list(range(0, X_train_in_as_target.shape[0])), \
                                     list(range(0, X_train_out_as_target.shape[0]))
-    random.shuffle(target_in_idx)
-    random.shuffle(target_out_idx)
+    # random.shuffle(target_in_idx)
+    # random.shuffle(target_out_idx)
     selected_target_in_idx = target_in_idx[0:target_number]
     selected_target_out_idx = target_out_idx[0:target_number]
     print("selected_target_in_idx:{} and selected_target_out_idx:{}".format(len(selected_target_in_idx),
@@ -64,3 +62,13 @@ if __name__ == '__main__':
     # # apply distance based attack and evaluate the performance
     accuracy, precision, recall, f1 = evaluate_cluster_distance_attack(params)
     print("{},{},{},{},{}".format(accuracy, precision, recall, f1, default_dist))
+    # if f1 >= 0.73 or f1 < 0.5:
+    #     with open("top_index.txt", 'a+') as f:
+    #         for idx in selected_idx:
+    #             f.write(str(idx))
+    #             f.write(',')
+    #         f.write("Accuracy:{}".format(accuracy))
+    #         f.write("Precision;{}".format(precision))
+    #         f.write("Recall:{}".format(recall))
+    #         f.write("F1-Score:{}\n".format(f1))
+    #     f.close()

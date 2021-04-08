@@ -6,7 +6,8 @@ import tensorflow as tf
 import numpy as np
 from utils.DataUtil import get_mem_data, get_selected_clustering_data, select_top_k
 from utils.ModelUtil import evaluate_cluster_distance_attack
-
+import torch.nn.functional as F
+import torch
 tf.config.list_physical_devices('GPU')
 
 if __name__ == '__main__':
@@ -27,11 +28,12 @@ if __name__ == '__main__':
     X_train_out_as_target, y_train_out_as_target = get_mem_data(domain_target_path)
     # prepare non-member dataset
     X_non_member = np.concatenate((X_train_in_as_non_member, X_train_out_as_non_member), axis=0)
+    X_non_member = np.array([F.softmax(torch.FloatTensor(x), dim=0).numpy() for x in X_non_member])
+
+    assert X_train_in_as_target.shape[0] == X_train_out_as_target.shape[0]
+
     # target_number = X_train_in_as_target.shape[0]
-    target_number = min(X_train_in_as_target.shape[0], X_train_out_as_target.shape[0])
-    target_number = 1000 if target_number > 1000 else target_number
-    if X_non_member.shape[0] > target_number * 2:
-        X_non_member = X_non_member[0:target_number * 2]
+    target_number = X_train_in_as_target.shape[0]
     # prepare target dataset to evaluate
     X_target = np.concatenate((X_train_in_as_target[0:target_number], X_train_out_as_target[0:target_number]), axis=0)
 
