@@ -3,7 +3,7 @@
         "use": true,
         "id": 0
     },
-    "out_dir": "exp2/",
+    "out_dir": "exp3/",
     "MLP": {
         "params": {
             "seed": 41,
@@ -30,7 +30,7 @@
     "GCN": {
         "params": {
             "seed": 41,
-            "epochs": 100,
+            "epochs": 1000,
             "batch_size": 64,
             "init_lr": 7e-4,
             "lr_reduce_factor": 0.5,

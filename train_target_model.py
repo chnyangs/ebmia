@@ -32,7 +32,7 @@ def train_val():
     per_epoch_time = []
     t0 = time.time()
     save_dir = "Target" + '_' + dataset_name + '_' + model_name + '_' + str(round(t0))
-    check_point_dir = os.path.join("exp2", save_dir)
+    check_point_dir = os.path.join(out_dir, save_dir)
     save_info = {"save": False, "save_dir": check_point_dir, "data_type": ""}
 
     # Load dataset
@@ -136,6 +136,7 @@ if __name__ == '__main__':
     # setup gpu
     device = gpu_setup(config['gpu']['use'], config['gpu']['id'])
     # read args
+    out_dir = config['out_dir']
     dataset_name = args.dataset
     model_name = args.model
     epochs = args.epochs

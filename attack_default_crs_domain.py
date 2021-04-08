@@ -2,6 +2,7 @@ import os
 import random
 import argparse, json
 import torch
+
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 import tensorflow as tf
 import numpy as np
@@ -31,13 +32,17 @@ if __name__ == '__main__':
     # select 30 non-member data sample
     idx = list(range(0, len(X_non_member)))
     random.shuffle(idx)
-    selected_idx = idx[0:30]
+    # selected_idx = idx[0:30]
+    selected_idx = [6, 24, 30, 41, 53, 58, 67, 94, 99]
+    selected_idx = [int(x) for x in selected_idx]
     X_non_member = X_non_member[selected_idx]
     X_non_member = np.array([F.softmax(torch.FloatTensor(x), dim=0).numpy() for x in X_non_member])
     # target_number = 2000 if target_number > 2000 else target_number
-    assert X_train_in_as_target.shape[0] == X_train_out_as_target.shape[0]
+    # remove assert because sometimes the data size is not even. Of course it exist non-equal size
+    # In this case, we still use min() method to select the target_number
+    # assert X_train_in_as_target.shape[0] == X_train_out_as_target.shape[0]
     # prepare target dataset to evaluate
-    target_number = X_train_in_as_target.shape[0]
+    target_number = min(X_train_in_as_target.shape[0], X_train_out_as_target.shape[0])
     target_in_idx, target_out_idx = list(range(0, X_train_in_as_target.shape[0])), \
                                     list(range(0, X_train_out_as_target.shape[0]))
     # random.shuffle(target_in_idx)
@@ -62,6 +67,9 @@ if __name__ == '__main__':
     # # apply distance based attack and evaluate the performance
     accuracy, precision, recall, f1 = evaluate_cluster_distance_attack(params)
     print("{},{},{},{},{}".format(accuracy, precision, recall, f1, default_dist))
+    with open("results.txt", 'a+') as f:
+        f.write("{},{},{},{},{}\n".format(accuracy, precision, recall, f1, default_dist))
+    f.close()
     # if f1 >= 0.73 or f1 < 0.5:
     #     with open("top_index.txt", 'a+') as f:
     #         for idx in selected_idx:

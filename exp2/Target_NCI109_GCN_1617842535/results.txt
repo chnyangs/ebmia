@@ -1,0 +1,3 @@
+Train Accuracy:0.8254545454545454
+Test Accuracy:0.7006060606060606
+Epochs:100

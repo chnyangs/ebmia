@@ -18,3 +18,9 @@
     2. dgl._ffi.base.DGLError: /opt/dgl/src/runtime/c_runtime_api.cc:87: Check failed: allow_missing: Device API gpu is not enabled 
     https://developer.nvidia.com/cuda-downloads?target_os=Linux&target_arch=x86_64&target_distro=Ubuntu&target_version=2004&target_type=runfilelocal
     Reinstall dgl==0.4.2 by pip and dgl-cuda10.2 by conda with -c dglteam
+
+
+## Dataset Download
+
+    https://chrsmrrs.github.io/datasets/docs/datasets/
+    
